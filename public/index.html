@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probe Departament Tehnic</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --line: #e3e6ea; --text: #1b1f24; --muted: #6a7480; --accent: #3b5bdb;
+  --sel: #e8edff; --code: #f0f2f5; --ok: #2b8a3e; --warn: #c2680a; --err: #c92a2a;
+  --b-site: #dbe4ff; --b-sys: #d3f9d8; --b-cod: #fff0c9; --b-doc: #e9ecef; --b-gol: #ffe3e3;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #14171b; --panel: #1c2026; --line: #2c323a; --text: #e6e9ed; --muted: #8b95a1; --accent: #7c97ff; --sel: #262e4a;
+    --code: #242a32; --b-site: #29366b; --b-sys: #1f4a2a; --b-cod: #5a4410; --b-doc: #333a42; --b-gol: #5a2424; }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; flex-direction: column; }
+header { display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+header h1 { font-size: 15px; margin: 0; white-space: nowrap; }
+.tabs { display: flex; gap: 4px; }
+.tabs button, .itemtabs button, .subtabs button { border: 1px solid var(--line); background: transparent; color: var(--text); padding: 5px 11px; border-radius: 7px; cursor: pointer; font: inherit; }
+.tabs button.on, .itemtabs button.on, .subtabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tabs small { opacity: .75; margin-left: 4px; }
+#q { flex: 1; max-width: 320px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--text); font: inherit; }
+.hint { color: var(--muted); font-size: 12px; margin-left: auto; white-space: nowrap; }
+main { flex: 1; display: flex; min-height: 0; }
+#list { width: 340px; overflow-y: auto; border-right: 1px solid var(--line); background: var(--panel); flex: none; }
+.row { padding: 8px 14px; border-bottom: 1px solid var(--line); cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+.row:hover { background: var(--bg); }
+.row.sel { background: var(--sel); box-shadow: inset 3px 0 0 var(--accent); }
+.row .t { font-weight: 600; display: flex; gap: 6px; align-items: baseline; }
+.row .s { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.b { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: var(--b-doc); white-space: nowrap; }
+.b.site { background: var(--b-site); } .b.sys { background: var(--b-sys); } .b.cod { background: var(--b-cod); } .b.gol { background: var(--b-gol); }
+#view { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.card { padding: 12px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.card h2 { margin: 0 0 4px; font-size: 18px; }
+.meta { display: flex; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 12px; align-items: center; }
+.meta a { color: var(--accent); text-decoration: none; }
+details { margin-top: 8px; }
+summary { cursor: pointer; color: var(--accent); font-size: 12px; }
+.qa { margin: 6px 0 0; font-size: 13px; }
+.qa b { display: block; color: var(--muted); font-weight: 500; font-size: 12px; margin-top: 6px; }
+.itemtabs, .subtabs { display: flex; gap: 6px; padding: 8px 18px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
+.subtabs { padding: 6px 18px; }
+.subtabs .sp { margin-left: auto; display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12px; }
+.subtabs .sp a, .subtabs .sp button { color: var(--accent); font-size: 12px; text-decoration: none; padding: 3px 9px; }
+#body { flex: 1; min-height: 0; display: flex; position: relative; }
+iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+.center { margin: auto; text-align: center; color: var(--muted); padding: 24px; max-width: 640px; }
+.spin { width: 22px; height: 22px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: s 0.8s linear infinite; margin: 0 auto 10px; }
+@keyframes s { to { transform: rotate(360deg); } }
+pre.log { text-align: left; background: var(--code); padding: 10px; border-radius: 8px; max-height: 260px; overflow: auto; font-size: 11.5px; white-space: pre-wrap; }
+#files { width: 260px; overflow-y: auto; border-right: 1px solid var(--line); background: var(--panel); flex: none; font-size: 12.5px; }
+.f { padding: 3px 10px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.f:hover { background: var(--bg); } .f.sel { background: var(--sel); }
+.f.dir { color: var(--muted); cursor: default; font-size: 11.5px; padding-top: 7px; }
+#content { flex: 1; min-width: 0; overflow: auto; padding: 18px 24px; background: var(--panel); }
+#content pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow: auto; font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre; margin: 0; }
+#content img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; }
+#content iframe.doc { height: 100%; min-height: 70vh; }
+.md h1, .md h2, .md h3 { margin: 1em 0 .4em; } .md h1 { font-size: 22px; } .md h2 { font-size: 18px; } .md h3 { font-size: 15px; }
+.md code { background: var(--code); padding: 1px 5px; border-radius: 4px; font: 12.5px ui-monospace, Menlo, monospace; }
+.md pre code { padding: 0; background: none; }
+.md table { border-collapse: collapse; } .md td, .md th { border: 1px solid var(--line); padding: 4px 9px; }
+.md img { max-width: 100%; } .md blockquote { margin: 8px 0; padding-left: 12px; border-left: 3px solid var(--line); color: var(--muted); }
+.note { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+.empty { color: var(--muted); padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Probe Dept. Tehnic 2026</h1>
+  <div class="tabs" id="tabs"></div>
+  <input id="q" placeholder="Caută nume, fișier, task…" autocomplete="off">
+  <span class="hint">↑ ↓ ca să parcurgi lista</span>
+</header>
+<main>
+  <div id="list"></div>
+  <div id="view"><div class="empty">Alege o persoană, o arhivă sau un site din listă.</div></div>
+</main>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const get = (u) => fetch(u).then((r) => r.json());
+
+let DB, people = [], items = [];     // items: {item, person}
+let view = 'persoane', sel = null, filter = '';   // sel: {pid, iid}
+let poll = null, startTimer = null, token = 0;
+
+// ---------- clasificare ----------
+function badge(it, p) {
+  if (it.note && it.note.startsWith('fișier gol')) return ['Fișier gol', 'gol'];
+  if (it.kind === 'site') return ['Site', 'site'];
+  const ext = (it.fisier.match(/\.(pdf|docx|png|jpg)$/i) || [])[1];
+  if (ext) return ['Document', ''];
+  if (p.sysadmin && !p.dev) return ['SysAdmin', 'sys'];
+  if (p.sysadmin && p.dev && /sysadmin|docker|\.txt|\.tar|\.gz|\.xz/i.test(it.fisier)) return ['SysAdmin', 'sys'];
+  return ['Cod', 'cod'];
+}
+const fullName = (p) => `${p.nume} ${p.prenume}`.trim();
+const taskBadges = (p) => `${p.dev ? '<span class="b site">Software</span>' : ''}${p.sysadmin ? '<span class="b sys">SysAdmin</span>' : ''}`;
+
+// ---------- listă ----------
+function matches(...txt) { return !filter || txt.join(' ').toLowerCase().includes(filter); }
+function renderTabs() {
+  const nSite = items.filter((x) => x.item.kind === 'site').length;
+  $('#tabs').innerHTML = [['persoane', 'Persoane', people.length], ['arhive', 'Arhive', items.length], ['site', 'Site-uri', nSite]]
+    .map(([k, l, n]) => `<button class="${view === k ? 'on' : ''}" data-v="${k}">${l}<small>${n}</small></button>`).join('');
+}
+function visibleRows() {
+  if (view === 'persoane') return people.filter((p) => matches(fullName(p), p.email, p.task, ...p.items.map((i) => i.fisier))).map((p) => ({ pid: p.id, iid: pickItem(p)?.id }));
+  const src = view === 'site' ? items.filter((x) => x.item.kind === 'site') : items;
+  return src.filter((x) => matches(fullName(x.person), x.item.fisier, x.person.task)).map((x) => ({ pid: x.person.id, iid: x.item.id }));
+}
+const pickItem = (p) => p.items.find((i) => i.kind === 'site') || p.items[0];
+function renderList() {
+  const rows = visibleRows();
+  $('#list').innerHTML = rows.map((r) => {
+    const p = people.find((x) => x.id === r.pid);
+    const it = p.items.find((i) => i.id === r.iid);
+    const on = view === 'persoane' ? sel?.pid === r.pid : sel?.iid === r.iid;
+    if (view === 'persoane') {
+      const bs = p.items.map((i) => { const [l, c] = badge(i, p); return `<span class="b ${c}">${l}</span>`; }).join('');
+      return `<div class="row ${on ? 'sel' : ''}" data-pid="${p.id}"><div class="t">${esc(fullName(p))}</div><div class="badges">${taskBadges(p)}${bs}</div></div>`;
+    }
+    const [l, c] = badge(it, p);
+    return `<div class="row ${on ? 'sel' : ''}" data-pid="${p.id}" data-iid="${it.id}"><div class="t">${esc(fullName(p))}</div><div class="s">${esc(it.fisier)}</div><div class="badges"><span class="b ${c}">${l}</span>${taskBadges(p)}</div></div>`;
+  }).join('') || '<div class="empty">Nimic găsit.</div>';
+  $('#list .sel')?.scrollIntoView({ block: 'nearest' });
+}
+
+// ---------- selecție ----------
+function select(pid, iid, auto = true) {
+  const p = people.find((x) => x.id === pid);
+  if (!p) return;
+  const it = p.items.find((i) => i.id === iid) || pickItem(p);
+  sel = { pid, iid: it?.id };
+  history.replaceState(null, '', '#' + pid + (it ? '/' + it.id : ''));
+  renderList();
+  renderPerson(p, it);
+}
+function move(d) {
+  const rows = visibleRows();
+  if (!rows.length) return;
+  const cur = rows.findIndex((r) => (view === 'persoane' ? r.pid === sel?.pid : r.iid === sel?.iid));
+  const n = rows[Math.max(0, Math.min(rows.length - 1, cur + d))];
+  select(n.pid, n.iid);
+}
+
+// ---------- panou persoană ----------
+function renderPerson(p, it) {
+  const ts = new Date(p.ts).toLocaleString('ro-RO', { dateStyle: 'medium', timeStyle: 'short' });
+  const qa = p.raspunsuri.map((r) => `<b>${esc(r.q)}</b>${esc(r.a) || '—'}`).join('');
+  const links = p.drive.map((l, i) => `<a href="${esc(l)}" target="_blank">Drive #${i + 1}</a>`).join(' · ');
+  const tabs = p.items.length > 1 ? `<div class="itemtabs">${p.items.map((i) => { const [l, c] = badge(i, p); return `<button class="${i.id === it?.id ? 'on' : ''}" data-iid="${i.id}">${l} · ${esc(i.fisier)}</button>`; }).join('')}</div>` : '';
+  $('#view').innerHTML = `
+    <div class="card"><h2>${esc(fullName(p))} ${taskBadges(p)}</h2>
+      <div class="meta"><span>${esc(p.email)}</span><span>${ts}</span><span>Task ales: <b>${esc(p.task)}</b></span>${links}</div>
+      <details><summary>Răspunsurile din Excel</summary><div class="qa">${qa}</div></details></div>
+    ${tabs}<div id="sub"></div><div id="body"></div>`;
+  if (!it) { $('#body').innerHTML = '<div class="center">Nicio predare găsită pentru această persoană.</div>'; return; }
+  renderItem(p, it);
+}
+
+function renderItem(p, it, mode) {
+  clearInterval(poll); clearTimeout(startTimer);
+  const tk = ++token;
+  mode = mode || (it.kind === 'site' ? 'run' : 'files');
+  const [l, c] = badge(it, p);
+  const sub = it.kind === 'site'
+    ? `<div class="subtabs"><button data-mode="run" class="${mode === 'run' ? 'on' : ''}">Site (rulează)</button><button data-mode="files" class="${mode === 'files' ? 'on' : ''}">Fișiere / cod</button><span class="sp" id="runctl"></span></div>`
+    : `<div class="subtabs"><span class="note" style="margin:0">${esc(it.fisier)} · ${(it.size / 1024).toFixed(1)} KB${it.note ? ' · ' + esc(it.note) : ''}${it.match.startsWith('ora') ? ' · <span title="' + esc(it.match) + '">potrivit după ora trimiterii</span>' : ''}</span></div>`;
+  $('#sub').innerHTML = sub;
+  if (mode === 'run') runSite(it, tk); else showFiles(it, tk);
+}
+
+// ---------- rulare site ----------
+async function runSite(it, tk) {
+  const body = $('#body');
+  body.innerHTML = '<div class="center"><div class="spin"></div>Pornesc…</div>';
+  startTimer = setTimeout(async () => {
+    const r = await get('/api/start?id=' + encodeURIComponent(it.id));
+    if (tk !== token) return;
+    const show = (s) => {
+      if (s.state === 'running') {
+        body.innerHTML = `<iframe src="${s.url}" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-modals"></iframe>`;
+        $('#runctl').innerHTML = `<span>${esc(s.url)}</span><a href="${s.url}" target="_blank">Deschide în tab nou ↗</a>` + (it.run.type !== 'static' ? '<button id="stop">Oprește</button>' : '');
+        $('#stop')?.addEventListener('click', async () => { await get('/api/stop'); body.innerHTML = '<div class="center">Oprit.</div>'; });
+        return true;
+      }
+      if (s.state === 'error') {
+        body.innerHTML = `<div class="center"><b style="color:var(--err)">Nu a pornit: ${esc(s.error)}</b><p>Posibile cauze: bază de date externă (MongoDB etc.) sau portul scris în cod e ocupat (pe macOS, 5000 = AirPlay Receiver). Codul și README sunt în „Fișiere / cod”.</p><pre class="log">${esc(s.log)}</pre></div>`;
+        return true;
+      }
+      body.innerHTML = `<div class="center"><div class="spin"></div>${s.state === 'installing' ? 'Instalez dependențele…' : 'Pornesc serverul…'}<pre class="log">${esc(s.log || '')}</pre></div>`;
+    };
+    if (show(r)) return;
+    poll = setInterval(async () => {
+      const s = await get('/api/status?id=' + encodeURIComponent(it.id));
+      if (tk !== token) return;
+      if (show(s)) clearInterval(poll);
+    }, 800);
+  }, 300);
+}
+
+// ---------- fișiere ----------
+const PRIORITY = [/^readme/i, /comenzi|commands|history|rezolvare|documentatie/i, /dockerfile|docker-compose/i];
+function showFiles(it, tk) {
+  const body = $('#body');
+  if (!it.files.length) { body.innerHTML = `<div class="center">${it.note ? esc(it.note) : 'Nu sunt fișiere.'}</div>`; return; }
+  const files = [...it.files].sort((a, b) => {
+    const da = a.split('/').length, db = b.split('/').length;
+    return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+  });
+  const rank = (f) => { const b = f.split('/').pop(); const i = PRIORITY.findIndex((r) => r.test(b)); return (i < 0 ? 9 : i) * 10 + f.split('/').length; };
+  const first = [...files].sort((a, b) => rank(a) - rank(b))[0];
+  let html = '', last = '';
+  for (const f of files) {
+    const dir = f.includes('/') ? f.slice(0, f.lastIndexOf('/')) : '';
+    if (dir !== last) { if (dir) html += `<div class="f dir">📁 ${esc(dir)}</div>`; last = dir; }
+    html += `<div class="f" data-f="${esc(f)}" title="${esc(f)}" style="padding-left:${10 + (dir ? 10 : 0)}px">${esc(f.split('/').pop())}</div>`;
+  }
+  body.innerHTML = `<div id="files">${html}</div><div id="content"></div>`;
+  $('#files').addEventListener('click', (e) => { const f = e.target.closest('.f[data-f]'); if (f) openFile(it, f.dataset.f); });
+  openFile(it, first);
+}
+async function openFile(it, f) {
+  document.querySelectorAll('#files .f').forEach((e) => e.classList.toggle('sel', e.dataset.f === f));
+  document.querySelector('#files .sel')?.scrollIntoView({ block: 'nearest' });
+  const c = $('#content');
+  const raw = `/api/file?raw=1&id=${encodeURIComponent(it.id)}&path=${encodeURIComponent(f)}`;
+  const ext = (f.match(/\.([^.\/]+)$/) || [])[1]?.toLowerCase();
+  const head = `<div class="note">${esc(f)}</div>`;
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) { c.innerHTML = head + `<img src="${raw}">`; return; }
+  if (ext === 'pdf') { c.innerHTML = head + `<iframe class="doc" src="${raw}"></iframe>`; return; }
+  const r = await get(`/api/file?id=${encodeURIComponent(it.id)}&path=${encodeURIComponent(f)}`);
+  if (r.binary) { c.innerHTML = head + `<div class="empty">Fișier binar (${(r.size / 1024).toFixed(1)} KB) — <a href="${raw}" target="_blank">deschide</a></div>`; return; }
+  const trunc = r.truncated ? '<div class="note">(afișat doar începutul)</div>' : '';
+  if (['md', 'markdown'].includes(ext)) c.innerHTML = head + trunc + `<div class="md">${md(r.text)}</div>`;
+  else c.innerHTML = head + trunc + `<pre>${esc(r.text)}</pre>`;
+}
+
+// ---------- markdown minimal ----------
+function md(src) {
+  const blocks = [];
+  src = src.replace(/```[^\n]*\n([\s\S]*?)```/g, (_, c) => { blocks.push(`<pre><code>${esc(c)}</code></pre>`); return `\u0000${blocks.length - 1}\u0000`; });
+  const inline = (s) => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\*([^*\n]+)\*/g, '<i>$1</i>')
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<span class="note">[imagine: $1]</span>').replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+  const out = []; let list = null, para = [], table = [];
+  const flushP = () => { if (para.length) out.push(`<p>${inline(para.join(' '))}</p>`); para = []; };
+  const flushL = () => { if (list) out.push(`<${list.t}>${list.i.map((x) => `<li>${inline(x)}</li>`).join('')}</${list.t}>`); list = null; };
+  const flushT = () => { if (table.length) { const rows = table.filter((r) => !/^\s*\|?[\s:|-]+\|?\s*$/.test(r)).map((r) => r.replace(/^\s*\||\|\s*$/g, '').split('|').map((x) => inline(x.trim()))); out.push('<table>' + rows.map((r, i) => `<tr>${r.map((c) => `<${i ? 'td' : 'th'}>${c}</${i ? 'td' : 'th'}>`).join('')}</tr>`).join('') + '</table>'); } table = []; };
+  for (const line of src.split('\n')) {
+    let m;
+    if (/^\u0000\d+\u0000$/.test(line.trim())) { flushP(); flushL(); flushT(); out.push(blocks[+line.trim().slice(1, -1)]); }
+    else if (/^\s*\|.*\|\s*$/.test(line)) { flushP(); flushL(); table.push(line); }
+    else if ((m = line.match(/^(#{1,6})\s+(.*)/))) { flushP(); flushL(); flushT(); out.push(`<h${Math.min(m[1].length, 3)}>${inline(m[2])}</h${Math.min(m[1].length, 3)}>`); }
+    else if ((m = line.match(/^\s*([-*]|\d+\.)\s+(.*)/))) { flushP(); flushT(); const t = /\d/.test(m[1]) ? 'ol' : 'ul'; if (!list || list.t !== t) { flushL(); list = { t, i: [] }; } list.i.push(m[2]); }
+    else if ((m = line.match(/^>\s?(.*)/))) { flushP(); flushL(); out.push(`<blockquote>${inline(m[1])}</blockquote>`); }
+    else if (!line.trim()) { flushP(); flushL(); flushT(); }
+    else { flushL(); flushT(); para.push(line.trim()); }
+  }
+  flushP(); flushL(); flushT();
+  return out.join('\n');
+}
+
+// ---------- evenimente ----------
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('#tabs button');
+  if (t) { view = t.dataset.v; renderTabs(); renderList(); return; }
+  const row = e.target.closest('#list .row');
+  if (row) return select(row.dataset.pid, row.dataset.iid);
+  const itab = e.target.closest('.itemtabs button');
+  if (itab) { const p = people.find((x) => x.id === sel.pid); return select(p.id, itab.dataset.iid); }
+  const m = e.target.closest('.subtabs button[data-mode]');
+  if (m) { const p = people.find((x) => x.id === sel.pid); renderItem(p, p.items.find((i) => i.id === sel.iid), m.dataset.mode); }
+});
+$('#q').addEventListener('input', (e) => { filter = e.target.value.trim().toLowerCase(); renderList(); });
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' && !['ArrowDown', 'ArrowUp'].includes(e.key)) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+});
+
+(async () => {
+  DB = await get('/api/people');
+  people = DB.people;
+  items = people.flatMap((p) => p.items.map((item) => ({ item, person: p })));
+  renderTabs(); renderList();
+  const [pid, iid] = location.hash.slice(1).split('/');
+  if (pid) select(pid, iid);
+})();
+</script>
+</body>
+</html>

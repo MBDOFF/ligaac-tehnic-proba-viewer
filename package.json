@@ -1,0 +1,8 @@
+{
+  "name": "probe-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vizualizator local pentru predările din formularul Probă Departament Tehnic",
+  "scripts": { "start": "node start.js", "rebuild": "node start.js --rebuild" },
+  "engines": { "node": ">=18" }
+}
